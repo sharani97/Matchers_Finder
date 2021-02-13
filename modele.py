@@ -124,8 +124,14 @@ class Requete:
         self.fichier =  fichierExcel() # Création d'un fichier excel
 
     def recuperer_token(self):
-        self.params["api_token"] = '130ed1dd046bbba9561858f3abbc9bb82bf9c32287f86ec6'
-
+        try:
+            with open("token.txt", "r") as f:
+                self.params["api_token"] = f.read()
+                return 1
+        except: 
+            print("Impossible de lire le fichier Token")
+            return 0
+            
 
     def demander_effectif(self,type):
         effectif=input("Veuillez saisir la tranche d'effectif "+str(type)+ " au format sirène (XX) : ")
@@ -146,9 +152,9 @@ class Requete:
         self.demander_effectif('min')
         self.demander_effectif('max')
         self.demander_convention_collective()
-        self.recuperer_token()
-        self.response = requests.get(self.requete,params=self.params)
-        self.analyse_code_retour()
+        if self.recuperer_token() :
+            self.response = requests.get(self.requete,params=self.params)
+            self.analyse_code_retour()
     
     def analyse_code_retour(self):
         if self.response.status_code == 200:
@@ -196,9 +202,6 @@ class Requete:
         print("Entreprises non sauvegardées dans le fichier XLXS : "+str(self.fichier.nb_erreur_xlsx))
         print("Entreprises sauvegardées dans le fichier XLXS : "+str(self.response.json().get('total_entreprises') - self.fichier.nb_erreur_xlsx))
         
-
-
-
 
 
 r = Requete()
